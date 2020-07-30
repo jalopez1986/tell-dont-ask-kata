@@ -1,9 +1,7 @@
-import Order from "../../src/domain/Order";
+import Order, {OrderCannotBeShippedException, OrderCannotBeShippedTwiceException} from "../../src/domain/Order";
 import OrderShipmentRequest from "../../src/useCase/OrderShipmentRequest";
 import TestOrderRepository from "../doubles/TestOrderRepository";
 import OrderShipmentUseCase from "../../src/useCase/OrderShipmentUseCase";
-import OrderCannotBeShippedException from "../../src/useCase/OrderCannotBeShippedException";
-import OrderCannotBeShippedTwiceException from "../../src/useCase/OrderCannotBeShippedTwiceException";
 import OrderStatus from "../../src/domain/OrderStatus";
 import ShipmentService from "../../src/service/ShipmentService";
 import OrderRepository from "../../src/repository/OrderRepository";
@@ -26,8 +24,7 @@ describe('OrderShipmentUseCase should', () => {
         initialOrder.status = OrderStatus.APPROVED;
         orderRepository.addOrder(initialOrder);
 
-        let request = new OrderShipmentRequest();
-        request.orderId = 1;
+        let request = new OrderShipmentRequest(1);
 
         useCase.run(request);
 
@@ -41,8 +38,7 @@ describe('OrderShipmentUseCase should', () => {
         initialOrder.status = OrderStatus.CREATED;
         orderRepository.addOrder(initialOrder);
 
-        let request = new OrderShipmentRequest();
-        request.orderId = 1;
+        let request = new OrderShipmentRequest(1);
 
         expect(() => {
             useCase.run(request)
@@ -57,8 +53,7 @@ describe('OrderShipmentUseCase should', () => {
         initialOrder.status = OrderStatus.REJECTED;
         orderRepository.addOrder(initialOrder);
 
-        let request = new OrderShipmentRequest();
-        request.orderId = 1;
+        let request = new OrderShipmentRequest(1);
 
         expect(() => {
             useCase.run(request)
@@ -73,8 +68,7 @@ describe('OrderShipmentUseCase should', () => {
         initialOrder.status = OrderStatus.SHIPPED;
         orderRepository.addOrder(initialOrder);
 
-        let request = new OrderShipmentRequest();
-        request.orderId = 1;
+        let request = new OrderShipmentRequest(1);
 
         expect(() => {
             useCase.run(request)

@@ -1,7 +1,7 @@
 export default class OrderApprovalRequest {
-    private _orderId: number;
-    private _approved: boolean;
+    constructor(private _orderId: number, private _approved: boolean ){
 
+    }
 
     get orderId(): number {
         return this._orderId;
@@ -13,9 +13,5 @@ export default class OrderApprovalRequest {
 
     get approved(): boolean {
         return this._approved;
-    }
-
-    set approved(value: boolean) {
-        this._approved = value;
     }
 }

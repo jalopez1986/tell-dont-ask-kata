@@ -10,40 +10,28 @@ export default class Order {
     private _status: OrderStatus;
     private _id: number;
 
-    constructor() {
-    }
 
+    constructor() {
+        this._items = [];
+        this._currency = "EUR";
+        this._total = new bigDecimal("0.00");
+        this._tax = new bigDecimal("0.00");
+    }
 
     get total(): bigDecimal {
         return this._total;
-    }
-
-    set total(value: bigDecimal) {
-        this._total = value;
     }
 
     get currency(): string {
         return this._currency;
     }
 
-    set currency(value: string) {
-        this._currency = value;
-    }
-
     get items(): OrderItem[] {
         return this._items;
     }
 
-    set items(value: OrderItem[]) {
-        this._items = value;
-    }
-
     get tax(): bigDecimal {
         return this._tax;
-    }
-
-    set tax(value: bigDecimal) {
-        this._tax = value;
     }
 
     get status(): OrderStatus {
@@ -61,4 +49,72 @@ export default class Order {
     set id(value: number) {
         this._id = value;
     }
+
+    public addOrderItem(orderItem: OrderItem) {
+        this._total = this._total.add(orderItem.taxedAmount);
+        this._tax = this._tax.add(orderItem.tax);
+        this._items.push(orderItem);
+    }
+
+    public approve() {
+        if (this._status === OrderStatus.SHIPPED) {
+            throw new ShippedOrdersCannotBeChangedException();
+        }
+
+        if (this._status === OrderStatus.REJECTED) {
+            throw new RejectedOrderCannotBeApprovedException();
+        }
+
+        this._status = OrderStatus.APPROVED;
+    }
+
+
+    public reject() {
+        if (this._status === OrderStatus.SHIPPED) {
+            throw new ShippedOrdersCannotBeChangedException();
+        }
+
+        if (this._status === OrderStatus.APPROVED) {
+            throw new ApprovedOrderCannotBeRejectedException();
+        }
+
+        this._status = OrderStatus.REJECTED;
+    }
+
+    public ship(){
+        if (this._status === OrderStatus.CREATED || this._status === OrderStatus.REJECTED) {
+            throw new OrderCannotBeShippedException();
+        }
+
+        if (this._status == OrderStatus.SHIPPED) {
+            throw new OrderCannotBeShippedTwiceException();
+        }
+
+        this._status = OrderStatus.SHIPPED;
+    }
 }
+
+
+//TODO: Tiene que ser con implements si es extends, fallan los test.
+
+export class ShippedOrdersCannotBeChangedException implements Error {
+    message: string;
+    name: string;
+}
+export class RejectedOrderCannotBeApprovedException implements Error {
+    message: string;
+    name: string;
+}
+export class ApprovedOrderCannotBeRejectedException implements Error {
+    message: string;
+    name: string;
+}
+export class OrderCannotBeShippedException implements Error {
+    message: string;
+    name: string;
+}
+export class OrderCannotBeShippedTwiceException implements Error {
+    message: string;
+    name: string;
+}
+

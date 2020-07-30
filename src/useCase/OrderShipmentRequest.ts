@@ -1,13 +1,7 @@
 export default class OrderShipmentRequest {
-    private _orderId: number;
-
-    constructor() {}
+    constructor(private _orderId: number) {}
 
     get orderId(): number {
         return this._orderId;
-    }
-
-    set orderId(value: number) {
-        this._orderId = value;
     }
 }

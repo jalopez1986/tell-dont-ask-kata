@@ -2,10 +2,10 @@ import OrderRepository from "../repository/OrderRepository";
 import ProductCatalog from "../repository/ProductCatalog";
 import SellItemsRequest from "./SellItemsRequest";
 import Order from "../domain/Order";
-import UnknownProductException from "./UnknownProductException";
+import UnknownProductException from "./exceptions/UnknownProductException";
 import OrderItem from "../domain/OrderItem";
 import OrderStatus from "../domain/OrderStatus";
-import bigDecimal from "js-big-decimal";
+import SellItemRequest from "./SellItemRequest";
 
 export default class OrderCreationUseCase {
     private readonly _orderRepository: OrderRepository;
@@ -18,34 +18,20 @@ export default class OrderCreationUseCase {
 
     public run(request: SellItemsRequest): void {
         let order = new Order();
-        order.status = OrderStatus.CREATED;
-        order.items = [];
-        order.currency = "EUR";
-        order.total = new bigDecimal("0.00");
-        order.tax = new bigDecimal("0.00");
+        order.status = OrderStatus.CREATED;   //TODO: Es mejor tener un builder o static factory o ObjectMother?
 
         for (let itemRequest of request.requests) {
-            let product = this._productCatalog.getByName(itemRequest.productName);
-
-            if (product === undefined) {
-                throw new UnknownProductException()
-            } else {
-                const unitaryTax = product.price.divide(new bigDecimal(100)).multiply(product.category.taxPercentage).round(2);
-                const unitaryTaxedAmount = product.price.add(unitaryTax).round(2);
-                const taxedAmount = unitaryTaxedAmount.multiply(new bigDecimal(itemRequest.quantity)).round(2);
-                const taxAmount = unitaryTax.multiply(new bigDecimal(itemRequest.quantity));
-
-                let orderItem = new OrderItem();
-                orderItem.product = product;
-                orderItem.quantity = itemRequest.quantity;
-                orderItem.tax = taxAmount;
-                orderItem.taxedAmount = taxedAmount;
-                order.items.push(orderItem);
-
-                order.total = order.total.add(taxedAmount);
-                order.tax = order.tax.add(taxAmount);
-            }
+            const orderItem = this.createOrderItem(itemRequest);
+            order.addOrderItem(orderItem);
         }
+
         this._orderRepository.save(order);
+    }
+
+    private createOrderItem(itemRequest: SellItemRequest): OrderItem {
+        let product = this._productCatalog.getByName(itemRequest.productName);
+        if (product === undefined) { throw new UnknownProductException() }
+
+        return new OrderItem(product, itemRequest.quantity);
     }
 }

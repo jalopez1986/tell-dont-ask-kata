@@ -1,11 +1,12 @@
-import Order from "../../src/domain/Order";
+import Order, {
+    ApprovedOrderCannotBeRejectedException,
+    RejectedOrderCannotBeApprovedException,
+    ShippedOrdersCannotBeChangedException
+} from "../../src/domain/Order";
 import OrderStatus from "../../src/domain/OrderStatus"
 import OrderApprovalRequest from "../../src/useCase/OrderApprovalRequest";
 import TestOrderRepository from "../doubles/TestOrderRepository";
 import OrderApprovalUseCase from "../../src/useCase/OrderApprovalUseCase";
-import RejectedOrderCannotBeApprovedException from "../../src/useCase/RejectedOrderCannotBeApprovedException";
-import ApprovedOrderCannotBeRejectedException from "../../src/useCase/ApprovedOrderCannotBeRejectedException";
-import ShippedOrdersCannotBeChangedException from "../../src/useCase/ShippedOrdersCannotBeChangedException";
 import OrderRepository from "../../src/repository/OrderRepository";
 
 describe('OrderApprovalUseCase should', () => {
@@ -22,9 +23,7 @@ describe('OrderApprovalUseCase should', () => {
         initialOrder.id = 1;
         orderRepository.addOrder(initialOrder);
 
-        let request = new OrderApprovalRequest();
-        request.orderId = 1;
-        request.approved = true;
+        let request = new OrderApprovalRequest(1, true);
 
         useCase.run(request);
 
@@ -38,9 +37,7 @@ describe('OrderApprovalUseCase should', () => {
         initialOrder.id = 1;
         orderRepository.addOrder(initialOrder);
 
-        let request = new OrderApprovalRequest();
-        request.orderId = 1;
-        request.approved = false;
+        let request = new OrderApprovalRequest(1, false);
 
         useCase.run(request);
 
@@ -54,9 +51,8 @@ describe('OrderApprovalUseCase should', () => {
         initialOrder.id = 1;
         orderRepository.addOrder(initialOrder);
 
-        let request = new OrderApprovalRequest();
-        request.orderId = 1;
-        request.approved = true;
+        let request = new OrderApprovalRequest(1, true);
+
 
         expect(() => {useCase.run(request)}).toThrowError(RejectedOrderCannotBeApprovedException);
         expect(orderRepository.getSavedOrder()).toBeUndefined();
@@ -68,9 +64,8 @@ describe('OrderApprovalUseCase should', () => {
         initialOrder.id = 1;
         orderRepository.addOrder(initialOrder);
 
-        let request = new OrderApprovalRequest();
-        request.orderId = 1;
-        request.approved = false;
+        let request = new OrderApprovalRequest(1, false);
+
 
         expect(() => {useCase.run(request)}).toThrowError(ApprovedOrderCannotBeRejectedException);
         expect(orderRepository.getSavedOrder()).toBeUndefined();
@@ -82,9 +77,7 @@ describe('OrderApprovalUseCase should', () => {
         initialOrder.id = 1;
         orderRepository.addOrder(initialOrder);
 
-        let request = new OrderApprovalRequest();
-        request.orderId = 1;
-        request.approved = true;
+        let request = new OrderApprovalRequest(1, true);
 
         expect(() => {useCase.run(request)}).toThrowError(ShippedOrdersCannotBeChangedException);
         expect(orderRepository.getSavedOrder()).toBeUndefined();
@@ -96,9 +89,7 @@ describe('OrderApprovalUseCase should', () => {
         initialOrder.id = 1;
         orderRepository.addOrder(initialOrder);
 
-        let request = new OrderApprovalRequest();
-        request.orderId = 1;
-        request.approved = false;
+        let request = new OrderApprovalRequest(1, false);
 
         expect(() => {useCase.run(request)}).toThrowError(ShippedOrdersCannotBeChangedException);
         expect(orderRepository.getSavedOrder()).toBeUndefined();

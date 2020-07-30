@@ -2,42 +2,24 @@ import Category from "./Category";
 import bigDecimal from "js-big-decimal";
 
 export default class Product {
-    private _product: Product;
-    private _name: string;
-    private _price: bigDecimal;
-    private _category: Category;
 
-    constructor() {}
-
-    get product(): Product {
-        return this._product;
-    }
-
-    set product(value: Product) {
-        this._product = value;
-    }
+    constructor(private _name: string, private _price: bigDecimal, private _category: Category) { }
 
     get name(): string {
         return this._name;
-    }
-
-    set name(value: string) {
-        this._name = value;
     }
 
     get price(): bigDecimal {
         return this._price;
     }
 
-    set price(value: bigDecimal) {
-        this._price = value;
+    public unitaryTax() : bigDecimal {
+        const unitaryTax = this._price.divide(new bigDecimal(100)).multiply(this._category.taxPercentage).round(2);
+        return unitaryTax;
     }
 
-    get category(): Category {
-        return this._category;
-    }
-
-    set category(value: Category) {
-        this._category = value;
+    public unitaryTaxedAmount(): bigDecimal {
+        const unitaryTaxedAmount = this._price.add(this.unitaryTax()).round(2);
+        return unitaryTaxedAmount;
     }
 }

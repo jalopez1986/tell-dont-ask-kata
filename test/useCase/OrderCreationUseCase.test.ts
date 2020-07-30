@@ -5,7 +5,7 @@ import Product from "../../src/domain/Product";
 import OrderCreationUseCase from "../../src/useCase/OrderCreationUseCase";
 import SellItemRequest from "../../src/useCase/SellItemRequest";
 import SellItemsRequest from "../../src/useCase/SellItemsRequest";
-import UnknownProductException from "../../src/useCase/UnknownProductException";
+import UnknownProductException from "../../src/useCase/exceptions/UnknownProductException";
 import OrderStatus from "../../src/domain/OrderStatus";
 import bigDecimal from "js-big-decimal";
 
@@ -16,31 +16,18 @@ describe('OrderCreationUseCase should', () => {
     beforeEach(() => {
         orderRepository = new TestOrderRepository();
 
-        let food = new Category();
-        food.name = "food";
-        food.taxPercentage = new bigDecimal("10");
+        let food = new Category("food", new bigDecimal("10") );
 
-        let product1 = new Product();
-        product1.name = "salad";
-        product1.price = new bigDecimal("3.56");
-        product1.category = food;
-        let product2 = new Product();
-        product2.name = "tomato";
-        product2.price = new bigDecimal("4.65");
-        product2.category = food;
+        let product1 = new Product("salad", new bigDecimal("3.56"), food);
+        let product2 = new Product("tomato", new bigDecimal("4.65"), food);
 
         productCatalog = new InMemoryProductCatalog([product1, product2]);
         useCase = new OrderCreationUseCase(orderRepository, productCatalog);
     });
 
     test('sell multiple items', () => {
-        let saladRequest = new SellItemRequest();
-        saladRequest.productName = "salad";
-        saladRequest.quantity = 2;
-
-        let tomatoRequest = new SellItemRequest();
-        tomatoRequest.productName = "tomato";
-        tomatoRequest.quantity = 3;
+        let saladRequest = new SellItemRequest("salad", 2);
+        let tomatoRequest = new SellItemRequest("tomato", 3);
 
         let request = new SellItemsRequest();
         request.requests = [saladRequest, tomatoRequest];
@@ -68,8 +55,7 @@ describe('OrderCreationUseCase should', () => {
     test('unknown product', () => {
         let request = new SellItemsRequest();
         request.requests = [];
-        let unknownProductRequest = new SellItemRequest();
-        unknownProductRequest.productName = "unknown product";
+        let unknownProductRequest = new SellItemRequest("unknown product", 1);
         request.requests.push(unknownProductRequest);
 
         expect(() => {useCase.run(request)}).toThrowError(UnknownProductException);
